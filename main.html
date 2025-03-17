@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinyl Lettering Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 600px; margin: 20px auto; text-align: center; }
+        #preview { font-size: 50px; margin: 20px 0; white-space: nowrap; }
+        .warning { color: red; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <label>Enter Text:</label>
+        <input type="text" id="textInput" value="Random text..." oninput="updatePreview()">
+
+        <label>Font:</label>
+        <select id="fontSelect" onchange="updatePreview()">
+            <option value="Arial">Arial</option>
+            <option value="Shrikhand">Shrikhand</option>
+            <option value="Verdana">Verdana</option>
+        </select>
+
+        <label>Color:</label>
+        <input type="color" id="colorPicker" value="#000000" onchange="updatePreview()">
+
+        <label>Height (mm):</label>
+        <input type="number" id="heightInput" value="50" min="25" onchange="updateDimensions()">
+        <span class="warning" id="heightWarning">Height cannot be less than 25mm!</span>
+
+        <p>Width (mm): <span id="widthDisplay">150</span></p>
+        <span class="warning" id="widthWarning">Width cannot exceed 2000mm!</span>
+
+        <button onclick="generateSVG()">Download SVG</button>
+
+        <div id="preview">Random text...</div>
+    </div>
+
+    <script>
+        function updatePreview() {
+            let text = document.getElementById('textInput').value;
+            let font = document.getElementById('fontSelect').value;
+            let color = document.getElementById('colorPicker').value;
+            let preview = document.getElementById('preview');
+            preview.style.fontFamily = font;
+            preview.style.color = color;
+            preview.innerText = text;
+        }
+
+        function updateDimensions() {
+            let height = parseFloat(document.getElementById('heightInput').value);
+            let preview = document.getElementById('preview');
+            let aspectRatio = preview.offsetWidth / preview.offsetHeight;
+            
+            if (height < 25) {
+                document.getElementById('heightWarning').style.display = 'block';
+                height = 25;
+                document.getElementById('heightInput').value = 25;
+            } else {
+                document.getElementById('heightWarning').style.display = 'none';
+            }
+            
+            let width = height * aspectRatio;
+            document.getElementById('widthDisplay').innerText = Math.round(width);
+            
+            if (width > 2000) {
+                document.getElementById('widthWarning').style.display = 'block';
+            } else {
+                document.getElementById('widthWarning').style.display = 'none';
+            }
+        }
+
+        function generateSVG() {
+            let text = document.getElementById('textInput').value;
+            let font = document.getElementById('fontSelect').value;
+            let color = document.getElementById('colorPicker').value;
+            let height = parseFloat(document.getElementById('heightInput').value);
+            let width = parseFloat(document.getElementById('widthDisplay').innerText);
+
+            let svgContent = `<svg xmlns='http://www.w3.org/2000/svg' width='${width}mm' height='${height}mm'>`
+                + `<text x='10' y='${height - 10}' font-family='${font}' font-size='${height * 0.8}px' fill='${color}'>`
+                + `${text}</text></svg>`;
+            
+            let blob = new Blob([svgContent], { type: 'image/svg+xml' });
+            let link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'vinyl_text.svg';
+            link.click();
+        }
+    </script>
+</body>
+</html>
